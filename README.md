@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
@@ -41,7 +41,7 @@
     button:hover {
       background-color: #004d40;
     }
-    /* Effet 3D renforcé sur le conteneur de la carte */
+    /* Effet 3D sur le conteneur de la carte */
     #map {
       height: 500px;
       width: 80%;
@@ -52,7 +52,8 @@
       transform: perspective(1800px) rotateX(5deg);
       transform-style: preserve-3d;
     }
-    .legend {
+    /* La légende est cachée par défaut */
+    #legend {
       background: rgba(255, 255, 255, 0.9);
       padding: 10px;
       position: absolute;
@@ -62,8 +63,22 @@
       font-size: 14px;
       border-radius: 5px;
       box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+      display: none;
     }
-    /* Canvas pour l'effet de précipitations (au-dessus de la carte) */
+    /* Bouton pour basculer l'affichage de la légende */
+    #toggleLegend {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      z-index: 1100;
+      background: #00796b;
+      color: white;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    /* Canvas pour l'effet de précipitations */
     #rainCanvas {
       position: absolute;
       top: 0;
@@ -93,8 +108,29 @@
     <canvas id="rainCanvas"></canvas>
   </div>
   
-  <!-- Légende -->
-  <div class="legend" id="legend"></div>
+  <!-- Bouton pour afficher/cacher la légende -->
+  <button id="toggleLegend">Afficher la légende</button>
+  
+  <!-- Légende masquée par défaut -->
+  <div id="legend">
+    <b>Légende</b><br>
+    <div style="display:inline-flex;align-items:center;">
+      <div style="position: relative; width:48px; height:48px;">
+        <img src="https://img.icons8.com/fluency/48/000000/weather-station.png" style="width:48px;height:48px;">
+        <img src="https://img.icons8.com/fluency/16/000000/radio-tower.png" style="width:16px;height:16px; position: absolute; top:-4px; left:16px;">
+      </div>&nbsp; Capteur IoT (Station avec antenne)
+    </div><br>
+    <b>Paramètres mesurés :</b><br>
+    <img src="https://img.icons8.com/fluency/24/000000/water.png" width="16" height="16"> Niveau d'eau<br>
+    <img src="https://img.icons8.com/fluency/24/000000/temperature.png" width="16" height="16"> Température<br>
+    <img src="https://img.icons8.com/fluency/24/000000/hygrometer.png" width="16" height="16"> Humidité<br>
+    <img src="https://img.icons8.com/fluency/24/000000/barometer.png" width="16" height="16"> Pression<br>
+    <img src="https://img.icons8.com/fluency/24/000000/raindrop.png" width="16" height="16"> Précipitations<br>
+    <img src="https://img.icons8.com/fluency/24/000000/landscape.png" width="16" height="16"> Altitude<br>
+    <b>Alertes :</b><br>
+    Débordement du fleuve : Niveau d'eau > 4.0 m (rouge)<br>
+    Maisons inondées : Précipitations > 100 mm (bleu)
+  </div>
   
   <script>
     /********* Initialisation de la carte *********/
@@ -104,7 +140,6 @@
     }).addTo(map);
     
     /********* Nouvelle icône composite pour les capteurs *********/
-    // Ici, on utilise une icône de station météo avec une petite antenne (radio tower) en superposition.
     var sensorIcon = L.divIcon({
       html: '<div style="position: relative; width:48px; height:48px;">' +
               '<img src="https://img.icons8.com/fluency/48/000000/weather-station.png" style="width:48px;height:48px;">' +
@@ -248,27 +283,22 @@
     setInterval(updateSensors, 5000);
     updateSensors();
     
-    document.getElementById('legend').innerHTML =
-      '<b>Légende</b><br>' +
-      '<div style="display:inline-flex;align-items:center;">' +
-        '<div style="position: relative; width:48px; height:48px;">' +
-          '<img src="https://img.icons8.com/fluency/48/000000/weather-station.png" style="width:48px;height:48px;">' +
-          '<img src="https://img.icons8.com/fluency/16/000000/radio-tower.png" style="width:16px;height:16px; position: absolute; top:-4px; left:16px;">' +
-        '</div>&nbsp; Capteur IoT (Station avec antenne)' +
-      '</div><br>' +
-      '<b>Paramètres mesurés :</b><br>' +
-      '<img src="https://img.icons8.com/fluency/24/000000/water.png" width="16" height="16"> Niveau d\'eau<br>' +
-      '<img src="https://img.icons8.com/fluency/24/000000/temperature.png" width="16" height="16"> Température<br>' +
-      '<img src="https://img.icons8.com/fluency/24/000000/hygrometer.png" width="16" height="16"> Humidité<br>' +
-      '<img src="https://img.icons8.com/fluency/24/000000/barometer.png" width="16" height="16"> Pression<br>' +
-      '<img src="https://img.icons8.com/fluency/24/000000/raindrop.png" width="16" height="16"> Précipitations<br>' +
-      '<img src="https://img.icons8.com/fluency/24/000000/landscape.png" width="16" height="16"> Altitude<br>' +
-      '<b>Alertes :</b><br>' +
-      'Débordement du fleuve : Niveau d\'eau > 4.0 m (rouge)<br>' +
-      'Maisons inondées : Précipitations > 100 mm (bleu)';
+    // Toggle de la légende
+    document.getElementById('toggleLegend').addEventListener('click', function() {
+      var legend = document.getElementById('legend');
+      if(legend.style.display === 'none' || legend.style.display === '') {
+        legend.style.display = 'block';
+        this.textContent = 'Cacher la légende';
+      } else {
+        legend.style.display = 'none';
+        this.textContent = 'Afficher la légende';
+      }
+    });
     
+    /********* Effet de précipitations (pluie) *********/
     var rainCanvas = document.getElementById('rainCanvas');
     var rainCtx = rainCanvas.getContext('2d');
+    
     function resizeRainCanvas() {
       rainCanvas.width = document.getElementById('map').offsetWidth;
       rainCanvas.height = document.getElementById('map').offsetHeight;
@@ -286,6 +316,7 @@
         speed: Math.random() * 4 + 4
       });
     }
+    
     function animateRain() {
       rainCtx.clearRect(0, 0, rainCanvas.width, rainCanvas.height);
       rainCtx.strokeStyle = 'rgba(0,162,232,0.7)';
@@ -316,7 +347,6 @@
       var popupMsg = `<b>Utilisateur Android</b><br>Connexion simulée depuis votre domicile.<br>`;
       popupMsg += alerteDetectee ? `<span style="color:red;">Alerte détectée</span>` : `<span style="color:green;">Aucune alerte</span>`;
       
-      // Définition de l'icône Android
       var androidIcon = L.divIcon({
         html: '<img src="https://img.icons8.com/color/48/000000/android-os.png" width="48" height="48">',
         iconSize: [48, 48],
